@@ -6,7 +6,7 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 	fastify.get('/',
 		{ onRequest: fastify.authPassport },
 		async function (request, reply) {
-			reply.send({ root: true, user: request.session.user, userSession: request.session.user })
+			reply.send({ root: true, user: request.user, userSession: request.session.user })
 			return reply
 		})
 	fastify.get('/auth/logout',

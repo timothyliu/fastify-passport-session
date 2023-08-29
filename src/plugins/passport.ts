@@ -42,11 +42,12 @@ declare module "fastify" {
 
 export default fp<FastifyPassportOptions>(async (fastify, opts) => {
 
-	const SESSION_SECRET = 'this is secret'
+	const SESSION_SECRET = process.env.SESSION_SECRET || '01234567890123456789012345678901'
 
-    const GOOGLE_OAUTH_CLIENT_ID = "<<change this>>"
-    const GOOGLE_OAUTH_CLIENT_SECRET = "<<change this>>"
+    const GOOGLE_OAUTH_CLIENT_ID = process.env.GOOGLE_OAUTH_CLIENT_ID || ''
+    const GOOGLE_OAUTH_CLIENT_SECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET || ''
     const MAX_SESSION_AGE = 1000 * 60 * 60 * 24 * 1 // 1 days
+    const SESSION_DB_URI = process.env.SESSION_DB_URI || 'mongodb://127.0.0.1:27017/sessionDB?directConnection=true'
     
     fastify.register(fastifyCookie, {
 		secret: 'my-secret', // for cookies signature
@@ -59,7 +60,7 @@ export default fp<FastifyPassportOptions>(async (fastify, opts) => {
 	})
 
     const store = new MongoDBStore({
-        uri: 'mongodb://127.0.0.1:27017/sessionDB?directConnection=true',
+        uri: SESSION_DB_URI,
         collection: 'sessions',
     })
 
@@ -97,7 +98,7 @@ export default fp<FastifyPassportOptions>(async (fastify, opts) => {
     
     const authPassport: RouteHandlerMethod = async (request: FastifyRequest, reply: FastifyReply ) => {
         console.log('authPassport: ', request.url)
-        if (!request.url.startsWith('/auth/login') && !request.isAuthenticated()) {
+        if (!request.url.startsWith('/auth/login') && !request.session.user) {
             return reply.redirect('/auth/login?redirectUri=' + encodeURIComponent(`${request.url}`))
         }
     }
